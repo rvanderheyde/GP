@@ -12,9 +12,9 @@
 
 
 # fail somewhat gracefully
+from graphics import *
 
 
-GRID_SIZE = 6
 
 
 def validate_move (brd,move):
@@ -27,9 +27,9 @@ def validate_move (brd,move):
         if players_vehicle == vehicle.name:
             if (players_direction == 'U' or players_direction == 'D') and vehicle.direction =='D':
                 if players_direction == 'U':
-                    for i in range(0,players_distance):
+                    for i in range(0,players_distance+1):
                         #print i 
-                        if x-i <= 0:
+                        if x-i < 0:
                             print 'invalid distance'
                             return False
                         if brd.brd[x-i][y] != 0 and i != 0:
@@ -38,7 +38,7 @@ def validate_move (brd,move):
                     print "moving up"
                     return [vehicle,'U',players_distance]
                 else:
-                    for i in range(0,players_distance+1):
+                    for i in range(0,players_distance):
                         #print i
                         #print y+(vehicle.length-1)+i
                         
@@ -49,13 +49,13 @@ def validate_move (brd,move):
                         if brd.brd[x+(vehicle.length-1)+i][y] != 0 and i != 0:
                             print 'invalid distance'
                             return False
+                    print "moving down" 
                     return [vehicle,'D',players_distance]
-                    print "moving down"
             elif  (players_direction == 'L' or players_direction == 'R') and vehicle.direction =='R':
                 if players_direction == 'L':
-                    for i in range(0,players_distance):
+                    for i in range(0,players_distance+1):
                         #print i 
-                        if y-i <= 0:
+                        if y-i < 0:
                             print 'invalid distance'
                             return False
                         if brd.brd[x][y-i] != 0 and i != 0:
@@ -82,10 +82,78 @@ def validate_move (brd,move):
     return False
 
 
-def read_player_input (brd):
-    player_input = raw_input("Enter Move(or q): ")
-    return player_input.upper()
+def read_player_input (win,brd):
+    # return player_input.upper()
+    vehicle_point = win.getMouse()
+    car_selected = select_car(vehicle_point,brd)
+    if car_selected == 'q':
+        move = False
+        return move
+    move_point = win.getMouse()
+    tile_selected = select_tile(move_point,brd)
+    if tile_selected == 'q':
+        move = False
+        return move
+    if tile_selected == False or car_selected == False:
+        print 'Your selection was invalide'
+        move = ''
+        return move
+    move = convert_move(car_selected,tile_selected)
+    return move
 
+def select_car(pt,brd):
+    car_selected = ''
+    x,y = (pt.getX(),pt.getY())
+    if y > 600:
+        return 'q'
+    for vehicle in brd.vehicles:
+        p1 = vehicle.rectangle.p1
+        p2 = vehicle.rectangle.p2
+        x1,y1 = (p1.getX(),p1.getY())
+        x2,y2 = (p2.getX(),p2.getY())
+        if x <= x2 and x >= x1 and y <= y2 and y >= y1:
+            vehicle.rectangle.setFill('peachpuff')
+            return vehicle
+    return False  
+
+def select_tile(pt,brd):
+    tile_selected = ''
+    x,y = (pt.getX(),pt.getY())
+    if y > 600:
+        return 'q'
+    for tile in brd.grid:
+        p1 = tile.p1
+        p2 = tile.p2
+        x1,y1 = (p1.getX(),p1.getY())
+        x2,y2 = (p2.getX(),p2.getY())
+        if x <= x2 and x >= x1 and y <= y2 and y >= y1:
+            tile.setFill('peachpuff')
+            return tile
+    return False
+
+def convert_move(car,tile):
+    p1 = tile.p1
+    cp1 = car.rectangle.p1
+    xt1,yt1 = (p1.getX(),p1.getY())
+    xc1,yc1 = (cp1.getX(),cp1.getY())
+    if xt1 > xc1:
+        d = 'R'
+        dis = (xt1-xc1)/100-car.length+1 
+    elif xt1<xc1:
+        d = 'L'
+        dis = (xc1-xt1)/100 
+    elif yt1 > yc1:
+        d = 'D'
+        dis = (yt1-yc1)/100-car.length+1 
+    else:
+        d = 'U'
+        dis = (yc1-yt1)/100 
+
+    e = str(dis)
+
+    move = car.name + d + e
+    print move
+    return move
 
 def update_board (brd,move):
     move[0].move(move[1],move[2])
@@ -95,15 +163,55 @@ def update_board (brd,move):
     return brd
 
 
-def print_board (brd):
+def print_board (win, brd):
+    ptclear1 = Point(0,0)
+    ptclear2 = Point(600,600)
+    clearbrd = Rectangle(ptclear1,ptclear2)
+    clearbrd.setOutline('white')
+    clearbrd.setFill('white')
+    clearbrd.draw(win)
+    pt1quit = Point(0,600)
+    pt2quit = Point(600,700)
+    quit = Rectangle(pt1quit,pt2quit)
+    quit.setFill('red')
+    quit.draw(win)
+    quit_txt = Text(Point(win.getWidth()/2,610),'QUIT')
+    quit_txt.draw(win)
+    grid = [];
+    for i in range(100, 700, 100):
+        for j in range(100, 700, 100):
+            pt1 = Point(i-95,j-95)
+            pt2 = Point(i-5, j-5)
+            rectangle = Rectangle(pt1, pt2)
+            rectangle.draw(win)
+            grid.append(rectangle)
+    for vehicle in brd.vehicles:
+        x,y = vehicle.position
+        l = vehicle.length
+        if vehicle.direction == 'R':
+            pt1 = Point(y*100-95,x*100-95)
+            pt2 = Point((y+l-1)*100-5,x*100-5)    
+        else:
+            pt1 = Point(y*100-95,x*100-95)
+            pt2 = Point(y*100-5,(x+l-1)*100-5)
+        rectangle = Rectangle(pt1,pt2)
+        if vehicle.name == 'X':
+            rectangle.setFill('cyan')
+        else:
+            rectangle.setFill('blue')
+        vehicle.rectangle = rectangle
+        rectangle.draw(win)
+    brd.grid = grid 
     
-    for i in brd.brd:
-        row = ''
-        for j in i: 
-            if j == 0:
-                j = '.'
-            row = row + j + '  '
-        print row
+
+    # for i in brd.brd:
+    #     row = ''
+    #     for j in i: 
+    #         if j == 0:
+    #             j = '.'
+    #         row = row + j + '  '
+    #     print row
+
     # l=len(brd.brd)
     # for i in range(l):
     #     row = []
@@ -137,6 +245,7 @@ class board(object):
     def __init__(self):
         self.brd = [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]]
         self.vehicles = []
+        self.grid = []
 
     def add_vehicle(self,cars):
         for car in cars:
@@ -162,6 +271,7 @@ class vehicle(object):
         self.position = (x,y)
         self.length = l
         self.direction = d
+        self.rectangle = ''
 
     def move(self,m_dir,m_dis):
         x,y = self.position
@@ -174,6 +284,7 @@ class vehicle(object):
         else:
             y = y+m_dis
         self.position = (x,y)
+
 
 def create_initial_level():
     brd =  board()
@@ -191,26 +302,28 @@ def create_initial_level():
 
 
 def main ():
-
+    win = GraphWin('RUSH HOUR',600,620)
     brd = create_initial_level()
 
-    print_board(brd)
+    print_board(win,brd)
     quit = False
     while not done(brd):
-        move = read_player_input(brd)
-        if move == 'Q':
+        move = read_player_input(win,brd)
+        if move == False:
             quit = True
             break
-        valid_move = validate_move(brd,move)
-        if valid_move != False:
-            brd = update_board(brd,valid_move)
-        print_board(brd)
+        if move != '':
+            valid_move = validate_move(brd,move)
+            if valid_move != False:
+                brd = update_board(brd,valid_move)
+        print_board(win, brd)
     if quit != True:
         print 'YOU WIN! (Yay...)\n'
     else:
         print 'you suck'
 
 def main_with_input(desc):
+    win = GraphWin('Rush HOUR',600,600)
     brd = board()
     list_of_vehicles = []
     for i in range(0,len(desc),4):
@@ -225,22 +338,22 @@ def main_with_input(desc):
             list_of_vehicles.append(vehicle(name,(x,y),direction))
     brd.add_vehicle(list_of_vehicles)
     brd.place_in_board()
-    print_board(brd)
+    print_board(win,brd)
     quit = False
     while not done(brd):
-        move = read_player_input(brd)
-        if move == 'Q':
+        move = read_player_input(win,brd)
+        if move == False:
             quit = True
             break
-        valid_move = validate_move(brd,move)
-        if valid_move != False:
-            brd = update_board(brd,valid_move)
-        print_board(brd)
+        if move != '':
+            valid_move = validate_move(brd,move)
+            if valid_move != False:
+                brd = update_board(brd,valid_move)
+        print_board(win, brd)
     if quit != True:
         print 'YOU WIN! (Yay...)\n'
     else:
         print 'you suck'
-        
 
 if __name__ == '__main__':
     import sys
