@@ -8,10 +8,12 @@
 # A simple puzzle game, based on the physical game of the same name 
 # by Binary Arts Corp
 #
-#from rush_object import vehicle
+#Chelsea Bailey and Radmer van der Heyde
+#nothing really special here, except we have a quit bar and the the game is played completely with the mouse. 
+#Everything is functional and there should be no bugs. 
+# Overall the project was not too bad.
 
 
-# fail somewhat gracefully
 from graphics import *
 
 

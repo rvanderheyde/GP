@@ -8,10 +8,13 @@
 # A simple puzzle game, based on the physical game of the same name 
 # by Binary Arts Corp
 #
-#from rush_object import vehicle
+# Chelsea Bailey and Radmer van der Heyde
+# nothing really special here. Everything is functional and there should be no bugs. 
+# Overall the project was not too bad.
 
 
-# fail somewhat gracefully
+
+
 
 
 GRID_SIZE = 6
