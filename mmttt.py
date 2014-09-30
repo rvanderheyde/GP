@@ -31,7 +31,14 @@ MARK_VALUE = {
 
 
 def initialize_board ():
-    return [' '] * 9
+    board = [' '] * 9
+    board[0] = 'X'
+    #board[1] = 'X'
+    #board[3] = 'X'
+    #board[4] = 'O'
+    #board[6] = 'O'
+    return board
+    #return [' '] * 9
 
 
 # returns 'O' if the board is a win for O
@@ -93,46 +100,55 @@ def utility (board):
 
 def min_value (board,value):
     # fix me 
-    
-    if has_win(board) != False:
-        value.append(1)
-        return value
-    elif len(possible_moves(board)) == 0:
-        value.append(0)
+    if done(board) != False:
+        value = utility(board)
         return value
     for i in possible_moves(board):
         new_board = make_move(board,i,'O')
         print_board(board)
-        value[-1] = min(value[-1],max_value(new_board,value))
+        value = min(value,max_value(new_board,value))
+        print 'Min'
+        print value
+        #return value
     return value
+
 
 def max_value (board,value):
     # fix me
-    
-    if has_win(board) != False:
-        value.append(-1)
-        return value
-    elif len(possible_moves(board)) == 0:
-        value.append(0)
+    if done(board) != False:
+        value = utility(board)
         return value
     for i in possible_moves(board):
         new_board = make_move(board,i,'X')
         print_board(board)
-        value[-1] = max(value[-1],min_value(new_board,value))
-    return value 
-
+        value = max(value,min_value(new_board,value))
+        print 'Max'
+        print value
+        #return value
+    return value
 
 def best_move (board,player):
     # fix me
-    value = [0]
-    v = min_value(board,value)
-    print v
-    return possible_moves(board)[a]
+    value = 0
+    scores = []
+    moves = []
+
+    for mov in possible_moves(board):
+        new_board = make_move(board,mov,'O')
+        print_board(board)
+        scores.append (min(value,max_value(new_board,value)))
+        moves.append (mov)
+        
+
+    print moves
+    print scores
+
+    move = moves[scores.index(min(scores))]
+    return move
 
 
 def main (): 
     board = initialize_board()
-
     print_board(board)
 
     while not done(board):
