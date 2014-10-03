@@ -99,36 +99,38 @@ def utility (board):
     else:
         return 0
 
-def min_value (board,value):
+def min_value (board):
     # fix me 
+    scores = []
+    moves = []
     if done(board) != False:
-        # print_board(board)
-        value = utility(board)
-        return value
-    for i in possible_moves(board):
-        new_board = make_move(board,i,'O')
-        # print_board(board)
-        #print value
-        value = min(value,max_value(new_board,value))
-        #print 'Min'
-        #print value
-    return value
+        return utility(board)
+
+    for mov in possible_moves(board):
+        new_board = make_move(board,mov,'O')
+        scores.append(max_value(new_board))
+        moves.append(mov)        
+
+    score=min(scores)
+    #print 'Minimizing',scores,score
+    return score
 
 
-def max_value (board,value):
+def max_value (board):
     # fix me
+    scores = []
+    moves = []
     if done(board) != False:
-        # print_board(board)
-        value = utility(board)
-        return value
-    for i in possible_moves(board):
-        new_board = make_move(board,i,'X')
-        # print_board(board)
-        #print value
-        value = max(value,min_value(new_board,value))
-        #print 'Max'
-        #print value
-    return value
+        return utility(board)
+
+    for mov in possible_moves(board):
+        new_board = make_move(board,mov,'X')
+        scores.append(min_value(new_board))
+        moves.append(mov)        
+
+    score = max(scores)
+    #print 'Maxing',scores, score
+    return score
 
 def best_move (board,player):
     # fix me
@@ -137,9 +139,8 @@ def best_move (board,player):
     
 
     for mov in possible_moves(board):
-        value = 0
         new_board = make_move(board,mov,'O')
-        scores.append(max_value(new_board,value))
+        scores.append(max_value(new_board))
         moves.append(mov)
         
 
