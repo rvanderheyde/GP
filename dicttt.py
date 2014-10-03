@@ -103,13 +103,17 @@ def print_board (board):
     print (display[12:16])
     return None
 
-def draw_board(board):
+def draw_board(board,win):
     #fix me
+    for spot in board:
+        return None
     return None
 
-def wait_player_input(board,player):
+def wait_player_input(board,player,win):
     #fix me
-    return None
+    move = win.getMouse()
+    #translate point into spot in array
+    return move
 
 def read_player_input (board, player):
     # FIX ME
@@ -204,6 +208,7 @@ def computer_move (board,player):
         scores.append(max_value(new_board,other(player)))
         moves.append(mov)
         print_board(board)
+        print 'branch completed'
 
     print moves
     print scores
@@ -222,6 +227,7 @@ def other (player):
 def run (stg,player,playX,playO): 
 
     board = create_board(stg)
+    win = GraphWin('TIC-TAC-TOE',450,500)
 
     print_board(board)
 
