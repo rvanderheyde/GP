@@ -105,6 +105,12 @@ def print_board (board):
 
 def draw_board(board,win):
     #fix me
+    for i in range(100, 500, 100):
+        for j in range(100, 500, 100):
+            pt1 = Point(i-95,j-95)
+            pt2 = Point(i-5, j-5)
+            rectangle = Rectangle(pt1, pt2)
+            rectangle.draw(win)
     for spot in board:
         return None
     return None
@@ -115,7 +121,7 @@ def wait_player_input(board,player,win):
     #translate point into spot in array
     return move
 
-def read_player_input (board, player):
+def read_player_input (board, player,tree):
     # FIX ME
     #
     # Read player input when playing as 'player' (either 'X' or 'O')
@@ -143,14 +149,6 @@ def make_move (board,move,player):
     new_board[move] = player
     return new_board
 
-    # if move == None:
-    #     return board
-    # else:
-    #     i=move
-    #     #x,y = move
-    #     #i = (y-1)*x
-    #     board[i] = player
-    #     return board
 
 def utility (board):
     # fix me
@@ -161,7 +159,7 @@ def utility (board):
     else:
         return 0
 
-def min_value (board, player):
+def min_value (board, player,tree):
     # fix me 
     scores = []
     moves = []
@@ -171,15 +169,23 @@ def min_value (board, player):
 
     for mov in possible_moves(board):
         new_board = make_move(board,mov,player)
-        scores.append(max_value(new_board,other(player)))
-        moves.append(mov)        
+        value = tree_check(board,tree)
+        if value == None:
+            win = max_value(new_board,other(player),tree)
+            scores.append(win)
+            brd=board_to_string(new_board)
+            tree[brd] = win
+            moves.append(mov)
+        else:
+            scores.append(value)  
+            moves.append(mov)      
 
     score=min(scores)
     #print 'Minimizing',scores,score
     return score
 
 
-def max_value (board,player):
+def max_value (board,player,tree):
     # fix me
     scores = []
     moves = []
@@ -188,27 +194,40 @@ def max_value (board,player):
         return utility(board)
 
     for mov in possible_moves(board):
-        #print possible_moves(board)
         new_board = make_move(board,mov,player)
-        #print_board(new_board)
-        scores.append(min_value(new_board,other(player)))
-        moves.append(mov)        
+        value = tree_check(board,tree)
+        if value == None:
+            win = min_value(new_board,other(player),tree)
+            scores.append(win)
+            brd=board_to_string(new_board)
+            tree[brd] = win
+            moves.append(mov)   
+        else:
+            scores.append(value)
+            moves.append(mov)     
 
     score = max(scores)
     #print 'Maxing',scores, score
     return score
 
-def computer_move (board,player):
+def computer_move (board,player,tree):
     # fix me
     scores = []
     moves = []
 
     for mov in possible_moves(board):
         new_board = make_move(board,mov,player)
-        scores.append(max_value(new_board,other(player)))
-        moves.append(mov)
-        print_board(board)
-        print 'branch completed'
+        value = tree_check(board,tree)
+        if value == None:
+            score=max_value(new_board,other(player),tree)
+            scores.append(score)
+            brd=board_to_string(new_board)
+            tree[brd] = score
+            moves.append(mov)
+        else:
+            scores.append(value)
+            moves.append(mov)
+
 
     print moves
     print scores
@@ -216,6 +235,51 @@ def computer_move (board,player):
     move = moves[scores.index(min(scores))]
     print move
     return move
+
+def tree_check(board,tree):
+    b1,b2,b3,b4 = rotate_board(board)
+    b1 = board_to_string(b1)
+    b2 = board_to_string(b2)
+    b3 = board_to_string(b3)
+    b4 = board_to_string(b4)
+
+    if b1 in tree:
+        return tree[b1]
+    elif b2 in tree:
+        return tree[b2]
+    elif b3 in tree:
+        return tree[b3]
+    elif b4 in tree:
+        return tree[b4]
+    else:
+        return None
+
+def rotate_board(board):
+    b1=board
+    b2=board
+    b2.reverse()
+    b3=[]
+    b4=[]
+
+    for i in range(3,0,-1):
+        b3.append(b1[i])
+        b3.append(b1[i+4])
+        b3.append(b1[i+8])
+        b3.append(b1[i+12])
+        b4.append(b2[i])
+        b4.append(b2[i+4])
+        b4.append(b2[i+8])
+        b4.append(b2[i+12])
+    
+    return b1, b2, b3, b4
+
+
+
+def board_to_string(board):
+    brd=''
+    for spot in board:
+        brd+=str(spot)
+    return brd
 
 
 def other (player):
@@ -227,15 +291,17 @@ def other (player):
 def run (stg,player,playX,playO): 
 
     board = create_board(stg)
-    win = GraphWin('TIC-TAC-TOE',450,500)
+    #win = GraphWin('TIC-TAC-TOE',450,500)
+    tree = {}
 
     print_board(board)
+    #draw_board(board,win)
 
     while not done(board):
         if player == 'X':
-            move = playX(board,player)
+            move = playX(board,player,tree)
         elif player == 'O':
-            move = playO(board,player)
+            move = playO(board,player,tree)
         else:
             fail('Unrecognized player '+player)
         board = make_move(board,move,player)
